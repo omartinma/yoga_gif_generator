@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:date_utils/date_utils.dart' as date_utils;
 
 void main() => runApp(MyApp());
 
@@ -14,23 +15,21 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(title: 'Yoga generator'),
+      home: MyHomePage(pageTitle: 'Yoga generator'),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
-  final String title;
-
-  
+  MyHomePage({Key key, this.pageTitle}) : super(key: key);
+  final String pageTitle;
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
- Future<Image> image;
+  Future<Image> image;
 
   @override
   void initState() {
@@ -38,10 +37,12 @@ class _MyHomePageState extends State<MyHomePage> {
     image = _getFirstGif();
   }
 
-    Future<Image> _getFirstGif() async {
-    String baseUrl =
-        "https://api.giphy.com/v1/gifs/search?api_key=hcKpPwHA8VH8LiCBja9kiuEmBeMbT2YJ&q=yoga&limit=1&offset=0&rating=G&lang=en";
-    var response = await http.get(baseUrl);
+  Future<Image> _getFirstGif() async {
+    var now = new DateTime.now();
+    String fixSearchUrl = "https://api.giphy.com/v1/gifs/search?";
+    String apiKeyUrl = "api_key="+"hcKpPwHA8VH8LiCBja9kiuEmBeMbT2YJ";
+    String parametersSearchUrl = "&q=yoga&limit=1&offset="+now.day.toString()+"&rating=G&lang=en";
+    var response = await http.get(fixSearchUrl+apiKeyUrl+parametersSearchUrl);
     var body = response.body;
     Map<String, dynamic> parsedJson = json.decode(body);
     List datalist = parsedJson["data"];
@@ -53,7 +54,6 @@ class _MyHomePageState extends State<MyHomePage> {
     return image;
   }
 
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -63,13 +63,13 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       home: Scaffold(
         appBar: AppBar(
-          title: Text(widget.title),
+          title: Text(widget.pageTitle),
         ),
         body: Center(
           child: FutureBuilder<Image>(
             future: image,
             builder: (context, snapshot) {
-              if (snapshot.hasData) {               
+              if (snapshot.hasData) {
                 return snapshot.data;
               } else if (snapshot.hasError) {
                 return Text("${snapshot.error}");
